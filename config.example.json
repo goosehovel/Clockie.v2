@@ -1,0 +1,41 @@
+{
+  "weather": {
+    "api_key": "YOUR_OPENWEATHERMAP_API_KEY",
+    "city": "Phoenix",
+    "state": "AZ",
+    "country": "US",
+    "units": "imperial"
+  },
+  "calendar": {
+    "update_interval": 300,
+    "max_events": 500,
+    "accounts": [
+      {
+        "name": "Personal",
+        "url": "https://caldav.icloud.com",
+        "username": "your-email@icloud.com",
+        "password": "xxxx-xxxx-xxxx-xxxx"
+      }
+    ]
+  },
+  "spotify": {
+    "client_id": "YOUR_SPOTIFY_CLIENT_ID",
+    "client_secret": "YOUR_SPOTIFY_CLIENT_SECRET",
+    "redirect_uri": "http://127.0.0.1:8000/api/spotify/callback",
+    "access_token": "",
+    "refresh_token": "",
+    "token_expires_at": 0,
+    "user_id": "",
+    "connected": false
+  },
+  "nest": {
+    "project_id": "YOUR_DEVICE_ACCESS_PROJECT_ID",
+    "client_id": "YOUR_GOOGLE_OAUTH_CLIENT_ID",
+    "client_secret": "YOUR_GOOGLE_OAUTH_CLIENT_SECRET",
+    "redirect_uri": "http://127.0.0.1:8000/api/integrations/nest/callback",
+    "access_token": "",
+    "refresh_token": "",
+    "token_expires_at": 0,
+    "connected": false
+  }
+}

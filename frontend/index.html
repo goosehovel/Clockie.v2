@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="auto" data-orientation="landscape">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0a0a12">
+    <title>Wall Clock</title>
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/icon-192.png">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Photo Background (for photos theme) -->
+    <div class="photo-bg" id="photoBg">
+        <div class="photo-layer" id="photoLayer1"></div>
+        <div class="photo-layer" id="photoLayer2"></div>
+        <div class="photo-overlay-dark"></div>
+        <div class="photo-vignette"></div>
+        <div class="no-photos" id="noPhotosMsg" style="display: none;">
+            <span class="icon">📷</span>
+            <p>No photos uploaded yet</p>
+            <a href="/upload">Add photos →</a>
+        </div>
+    </div>
+    
+    <!-- Animated Liquid Background - CSS-based for crisp rendering -->
+    <div class="liquid-bg">
+        <!-- Flowcean (default) blobs -->
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+        
+        <!-- Grain overlay for organic texture -->
+        <div class="grain-overlay"></div>
+    </div>
+    
+    <!-- Holiday-specific effects overlay -->
+    <div class="holiday-effects" id="holidayEffects">
+        <!-- Particles will be injected by JS -->
+    </div>
+    
+    <!-- Weather effects overlay -->
+    <div class="weather-effects" id="weatherEffects">
+        <!-- Weather particles will be injected by JS -->
+    </div>
+    
+    <!-- Theme-specific background elements -->
+    <div class="theme-bg" id="themeBg">
+        <!-- Aurora -->
+        <div class="aurora-wave"></div>
+        <div class="aurora-wave"></div>
+        <div class="aurora-wave"></div>
+        
+        <!-- Nebula -->
+        <div class="nebula-cloud"></div>
+        <div class="nebula-cloud"></div>
+        <div class="nebula-cloud"></div>
+        <div class="nebula-cloud"></div>
+        
+        <!-- Lava -->
+        <div class="lava-blob"></div>
+        <div class="lava-blob"></div>
+        <div class="lava-blob"></div>
+        <div class="lava-blob"></div>
+        
+        <!-- Forest -->
+        <div class="forest-leaf"></div>
+        <div class="forest-leaf"></div>
+        <div class="forest-leaf"></div>
+        <div class="forest-leaf"></div>
+        
+        <!-- Sunset -->
+        <div class="sunset-glow"></div>
+        <div class="sunset-glow"></div>
+        <div class="sunset-glow"></div>
+        
+        <!-- Ocean -->
+        <div class="ocean-wave"></div>
+        <div class="ocean-wave"></div>
+        <div class="ocean-wave"></div>
+        <div class="ocean-wave"></div>
+        
+        <!-- Neon -->
+        <div class="neon-line neon-line-1"></div>
+        <div class="neon-line neon-line-2"></div>
+        <div class="neon-line neon-line-3"></div>
+        <div class="neon-line neon-line-4"></div>
+        <div class="neon-glow neon-glow-1"></div>
+        <div class="neon-glow neon-glow-2"></div>
+        
+        <!-- Minimal -->
+        <div class="minimal-gradient"></div>
+        <div class="minimal-gradient"></div>
+        
+        <!-- Candy -->
+        <div class="candy-bubble"></div>
+        <div class="candy-bubble"></div>
+        <div class="candy-bubble"></div>
+        <div class="candy-bubble"></div>
+        <div class="candy-bubble"></div>
+    </div>
+
+    <!-- Glass Transparency Slider (top right, barely visible) -->
+    <div class="glass-slider-container" id="glassSliderContainer">
+        <button class="glass-slider-toggle" id="glassSliderToggle" title="Adjust glass transparency">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+            </svg>
+        </button>
+        <div class="glass-slider-panel" id="glassSliderPanel">
+            <div class="glass-slider-label">Glass Opacity</div>
+            <input type="range" id="glassOpacitySlider" min="0" max="100" value="20" class="glass-slider">
+            <div class="glass-slider-value"><span id="glassOpacityValue">20</span>%</div>
+            
+            <div class="glass-mode-divider"></div>
+            <div class="glass-slider-label">Glass Style</div>
+            <div class="glass-mode-toggle">
+                <button class="glass-mode-btn active" data-mode="classic" id="glassModeClassic">Classic</button>
+                <button class="glass-mode-btn" data-mode="liquid" id="glassModeLiquid">Liquid</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Gear (discreet) -->
+    <button class="settings-gear" id="settingsGear" title="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+    </button>
+    
+    <!-- Settings Panel -->
+    <div class="settings-overlay" id="settingsOverlay">
+        <div class="settings-panel">
+            <header class="settings-header">
+                <h2>Settings</h2>
+                <button class="settings-close" id="settingsClose">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </header>
+            
+            <div class="settings-content">
+                <!-- Theme Mode -->
+                <div class="settings-section">
+                    <h3>Display Mode</h3>
+                    <div class="settings-options theme-options">
+                        <button class="settings-option" data-theme="auto">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="4"/>
+                                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+                            </svg>
+                            <span>Auto</span>
+                        </button>
+                        <button class="settings-option" data-theme="light">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="5"/>
+                                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                            </svg>
+                            <span>Light</span>
+                        </button>
+                        <button class="settings-option" data-theme="dark">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                            </svg>
+                            <span>Dark</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Orientation Toggle -->
+                <div class="settings-section">
+                    <h3>Screen Orientation</h3>
+                    <div class="orientation-toggle">
+                        <button class="orientation-btn active" data-orientation="landscape">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="5" width="20" height="14" rx="2"/>
+                                <line x1="6" y1="12" x2="18" y2="12"/>
+                            </svg>
+                            <span>Landscape</span>
+                        </button>
+                        <button class="orientation-btn" data-orientation="portrait">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="5" y="2" width="14" height="20" rx="2"/>
+                                <line x1="12" y1="6" x2="12" y2="18"/>
+                            </svg>
+                            <span>Portrait</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Touch Mode -->
+                <div class="settings-section">
+                    <h3>Touch Mode</h3>
+                    <div class="settings-toggle-row">
+                        <span>Hide cursor (kiosk mode)</span>
+                        <button class="settings-switch" id="touchModeSwitch">
+                            <span class="switch-slider"></span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Weather Effects -->
+                <div class="settings-section">
+                    <h3>Effects</h3>
+                    <div class="settings-toggle-row">
+                        <span>Weather particles</span>
+                        <button class="settings-switch active" id="weatherFxSwitch">
+                            <span class="switch-slider"></span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Spotify Integration -->
+                <div class="settings-section">
+                    <h3>🎵 Spotify</h3>
+                    <div class="spotify-status" id="spotifyStatus">
+                        <div class="spotify-not-connected" id="spotifyNotConnected">
+                            <p class="spotify-message">Connect your Spotify account to see what's playing</p>
+                            <button class="btn-spotify-connect" id="spotifyConnectBtn">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+                                </svg>
+                                Connect Spotify
+                            </button>
+                            <!-- Manual auth flow UI -->
+                            <div class="spotify-manual-flow hidden" id="spotifyManualFlow">
+                                <p class="spotify-instructions">1. Click the link below to authorize<br>2. After authorizing, you'll see an error page - <strong>that's OK!</strong><br>3. Copy the URL from your browser's address bar<br>4. Paste it below</p>
+                                <a class="spotify-auth-link" id="spotifyAuthLink" href="#" target="_blank">Open Spotify Authorization →</a>
+                                <div class="form-group">
+                                    <label>Paste the callback URL here:</label>
+                                    <input type="text" id="spotifyCallbackUrl" placeholder="http://localhost:8000/api/spotify/callback?code=..." inputmode="url" enterkeyhint="done">
+                                </div>
+                                <div class="spotify-manual-actions">
+                                    <button class="btn-spotify-submit" id="spotifySubmitCallback">Complete Connection</button>
+                                    <button class="btn-spotify-cancel" id="spotifyCancelAuth">Cancel</button>
+                                </div>
+                                <p class="spotify-manual-status" id="spotifyManualStatus"></p>
+                            </div>
+                        </div>
+                        <div class="spotify-connected hidden" id="spotifyConnected">
+                            <div class="spotify-user-info">
+                                <img class="spotify-user-avatar" id="spotifyUserAvatar" src="" alt="">
+                                <span class="spotify-user-name" id="spotifyUserName"></span>
+                            </div>
+                            <button class="btn-spotify-disconnect" id="spotifyDisconnectBtn">Disconnect</button>
+                        </div>
+                        <div class="spotify-not-configured hidden" id="spotifyNotConfigured">
+                            <p class="spotify-message">Configure Client ID & Secret below first</p>
+                        </div>
+                        <!-- Always-visible reset option -->
+                        <div class="spotify-reset-option">
+                            <button class="btn-spotify-reset" id="spotifyResetBtn" title="Clear Spotify connection and start fresh">🔄 Reset Spotify Connection</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Spotify Configuration (Collapsible) -->
+                <div class="settings-section settings-accordion">
+                    <button class="accordion-header" data-accordion="spotify">
+                        <h3>🔧 Spotify Config</h3>
+                        <svg class="accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                    <div class="accordion-content" id="spotifyAccordion">
+                        <div class="config-form">
+                            <div class="form-group">
+                                <label>Client ID</label>
+                                <input type="text" id="cfgSpotifyClientId" placeholder="From Spotify Developer Dashboard" autocomplete="off" inputmode="text" enterkeyhint="next">
+                            </div>
+                            <div class="form-group">
+                                <label>Client Secret</label>
+                                <input type="text" id="cfgSpotifyClientSecret" placeholder="From Spotify Developer Dashboard" autocomplete="off" inputmode="text" enterkeyhint="next">
+                            </div>
+                            <div class="form-group">
+                                <label>Redirect URI</label>
+                                <input type="url" id="cfgSpotifyRedirectUri" placeholder="http://your-clock-ip:8000/api/spotify/callback" inputmode="url" enterkeyhint="done">
+                                <small class="form-hint">Add this to your Spotify app's Redirect URIs</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Links -->
+                <div class="settings-section">
+                    <h3>Quick Links</h3>
+                    <div class="settings-links">
+                        <a href="/notes" class="settings-link">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                            </svg>
+                            <span>Edit Notes</span>
+                        </a>
+                        <a href="/cust" class="settings-link">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 2a10 10 0 0 1 0 20"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            <span>Themes</span>
+                        </a>
+                        <a href="/upload" class="settings-link">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                            <span>Photos</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Weather Configuration (Collapsible) -->
+                <div class="settings-section settings-accordion">
+                    <button class="accordion-header" data-accordion="weather">
+                        <h3>☁️ Weather Config</h3>
+                        <svg class="accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                    <div class="accordion-content" id="weatherAccordion">
+                        <div class="config-form">
+                            <div class="form-group">
+                                <label>API Key</label>
+                                <input type="text" id="cfgWeatherApiKey" placeholder="OpenWeatherMap API key" autocomplete="off" inputmode="text" enterkeyhint="next">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>City</label>
+                                    <input type="text" id="cfgWeatherCity" placeholder="Phoenix" inputmode="text" enterkeyhint="next">
+                                </div>
+                                <div class="form-group form-group-sm">
+                                    <label>State</label>
+                                    <input type="text" id="cfgWeatherState" placeholder="AZ" maxlength="2" inputmode="text" enterkeyhint="next">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group form-group-sm">
+                                    <label>Country</label>
+                                    <input type="text" id="cfgWeatherCountry" placeholder="US" maxlength="2" inputmode="text" enterkeyhint="done">
+                                </div>
+                                <div class="form-group">
+                                    <label>Units</label>
+                                    <select id="cfgWeatherUnits">
+                                        <option value="imperial">Imperial (°F)</option>
+                                        <option value="metric">Metric (°C)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Calendar Configuration (Collapsible) -->
+                <div class="settings-section settings-accordion">
+                    <button class="accordion-header" data-accordion="calendar">
+                        <h3>📅 Calendar Config</h3>
+                        <svg class="accordion-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                    <div class="accordion-content" id="calendarAccordion">
+                        <div class="config-form">
+                            <div class="form-row">
+                                <div class="form-group form-group-sm">
+                                    <label>Update (min)</label>
+                                    <input type="number" id="cfgCalendarInterval" placeholder="5" min="1" max="60" inputmode="numeric" enterkeyhint="next">
+                                </div>
+                                <div class="form-group form-group-sm">
+                                    <label>Max Events</label>
+                                    <input type="number" id="cfgCalendarMaxEvents" placeholder="15" min="1" max="50" inputmode="numeric" enterkeyhint="done">
+                                </div>
+                            </div>
+                            
+                            <div class="accounts-header">
+                                <span>iCloud Accounts</span>
+                                <button class="btn-icon" id="addCalendarAccount" title="Add account">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <line x1="12" y1="8" x2="12" y2="16"/>
+                                        <line x1="8" y1="12" x2="16" y2="12"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            
+                            <div class="accounts-list" id="calendarAccountsList">
+                                <!-- Accounts will be dynamically added here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Save Button -->
+                <div class="settings-section settings-actions">
+                    <button class="btn-save" id="saveConfigBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                            <polyline points="17 21 17 13 7 13 7 21"/>
+                            <polyline points="7 3 7 8 15 8"/>
+                        </svg>
+                        Save Configuration
+                    </button>
+                    <div class="save-status" id="saveStatus"></div>
+                </div>
+            </div>
+            
+            <footer class="settings-footer">
+                <span class="settings-hint">
+                    <kbd>T</kbd> cycle modes · <kbd>B</kbd> cycle backgrounds
+                </span>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <main class="container">
+        <!-- Header Area: Ghost Player | Time | (empty for symmetry) -->
+        <header class="header-row">
+            <!-- Left: Spotify Ghost Player -->
+            <div class="header-left">
+                <div class="ghost-player hidden" id="ghostPlayer">
+                    <!-- Tiny album art (circular) -->
+                    <img class="ghost-album" id="ghostAlbumArt" src="" alt="" draggable="false">
+                    
+                    <!-- Controls cluster -->
+                    <div class="ghost-controls">
+                        <button class="ghost-btn" id="ghostPrevBtn" aria-label="Previous">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3 6l9-6v12z"/></svg>
+                        </button>
+                        <button class="ghost-btn ghost-btn-primary" id="ghostPlayPauseBtn" aria-label="Play">
+                            <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                            <svg class="pause-icon hidden" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>
+                        </button>
+                        <button class="ghost-btn" id="ghostNextBtn" aria-label="Next">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM6 18V6l9 6z"/></svg>
+                        </button>
+                    </div>
+                    
+                    <!-- Whisper text -->
+                    <div class="ghost-text">
+                        <span class="ghost-title" id="ghostTrackTitle"></span>
+                        <span class="ghost-separator">—</span>
+                        <span class="ghost-artist" id="ghostTrackArtist"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Center: Time Display -->
+            <section class="time-section">
+                <div class="time-wrapper">
+                    <span class="time-main" id="timeDisplay">12:00</span>
+                    <div class="time-meta">
+                        <span class="time-seconds" id="secondsDisplay">00</span>
+                        <span class="time-period" id="periodDisplay">PM</span>
+                    </div>
+                </div>
+                <div class="date-display" id="dateDisplay">Monday, December 22, 2025</div>
+            </section>
+            
+            <!-- Right: Empty for symmetry -->
+            <div class="header-right"></div>
+        </header>
+
+        <!-- Cards Grid -->
+        <section class="cards-grid">
+            <!-- Weather Card -->
+            <article class="card weather-card">
+                <div class="card-inner">
+                    <div class="weather-header">
+                        <span class="weather-icon" id="weatherIcon">☀️</span>
+                        <div class="weather-temp-wrap">
+                            <span class="weather-temp" id="weatherTemp">--</span>
+                            <span class="weather-unit">°F</span>
+                        </div>
+                    </div>
+                    <div class="weather-body">
+                        <p class="weather-desc" id="weatherDesc">Loading...</p>
+                        <p class="weather-meta">
+                            <span id="weatherFeels">Feels --°</span>
+                            <span class="sep">·</span>
+                            <span id="weatherHumidity">--%</span>
+                        </p>
+                    </div>
+                    <footer class="weather-footer">
+                        <span id="weatherLocation">Creston, Iowa</span>
+                    </footer>
+                    
+                    <!-- Nest Thermostat Section (shown only when connected) -->
+                    <div class="nest-section hidden" id="nestSection">
+                        <div class="nest-divider"></div>
+                        <div class="nest-content">
+                            <div class="nest-header">
+                                <span class="nest-icon">🏠</span>
+                                <span class="nest-label" id="nestLabel">Thermostat</span>
+                            </div>
+                            <div class="nest-data">
+                                <div class="nest-temp-wrap">
+                                    <span class="nest-temp" id="nestTemp">--</span>
+                                    <span class="nest-unit">°F</span>
+                                </div>
+                                <div class="nest-status">
+                                    <span class="nest-mode" id="nestMode">--</span>
+                                    <span class="nest-hvac" id="nestHvac"></span>
+                                </div>
+                            </div>
+                            <div class="nest-meta">
+                                <span id="nestHumidity">--%</span>
+                                <span class="sep">·</span>
+                                <span id="nestSetpoint">Set --°</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Today Card -->
+            <article class="card event-card today-card">
+                <div class="card-inner">
+                    <header class="card-header">
+                        <span class="card-label">Today</span>
+                        <div class="card-dots" id="todayIndicator"></div>
+                    </header>
+                    <!-- Pinned next event for today -->
+                    <div class="event-pinned" id="todayPinned">
+                        <h3 class="event-title" id="todayTitle">No events</h3>
+                        <p class="event-time" id="todayTime"></p>
+                    </div>
+                    <!-- Cycling other today events -->
+                    <div class="event-cycle" id="todayCycle">
+                        <div class="event-cycle-item">
+                            <span class="event-cycle-title" id="todayCycleTitle"></span>
+                            <span class="event-cycle-time" id="todayCycleTime"></span>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Upcoming Card -->
+            <article class="card event-card upcoming-card">
+                <div class="card-inner">
+                    <header class="card-header">
+                        <span class="card-label">Upcoming</span>
+                        <div class="card-dots" id="upcomingIndicator"></div>
+                    </header>
+                    <!-- Pinned next upcoming event -->
+                    <div class="event-pinned" id="upcomingPinned">
+                        <h3 class="event-title" id="upcomingTitle">No events</h3>
+                        <p class="event-time" id="upcomingTime"></p>
+                    </div>
+                    <!-- Cycling other upcoming events -->
+                    <div class="event-cycle" id="upcomingCycle">
+                        <div class="event-cycle-item">
+                            <span class="event-cycle-title" id="upcomingCycleTitle"></span>
+                            <span class="event-cycle-time" id="upcomingCycleTime"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Mini Calendar -->
+                    <div class="mini-calendar" id="miniCalendar">
+                        <div class="calendar-header">
+                            <button class="calendar-nav" id="calPrevMonth" title="Previous month">‹</button>
+                            <span class="calendar-month" id="calMonthYear">January 2026</span>
+                            <button class="calendar-nav" id="calNextMonth" title="Next month">›</button>
+                        </div>
+                        <div class="calendar-weekdays">
+                            <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+                        </div>
+                        <div class="calendar-days" id="calendarDays">
+                            <!-- Days will be generated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Day Events Popup -->
+            <div class="day-popup-overlay" id="dayPopupOverlay">
+                <div class="day-popup">
+                    <header class="day-popup-header">
+                        <h3 id="dayPopupTitle">January 15, 2026</h3>
+                        <button class="day-popup-close" id="dayPopupClose">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 6L6 18M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </header>
+                    <div class="day-popup-content" id="dayPopupContent">
+                        <!-- Events for selected day will be listed here -->
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Notes & Jarvis Card -->
+            <article class="card notes-card">
+                <div class="card-inner notes-jarvis-split">
+                    <!-- Top Half: Notes -->
+                    <div class="notes-section">
+                        <header class="card-header">
+                            <span class="card-label">📝 Notes</span>
+                        </header>
+                        <div class="card-body notes-body">
+                            <p class="notes-text" id="stickyNoteText">No notes yet</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Divider -->
+                    <div class="jarvis-divider"></div>
+                    
+                    <!-- Bottom Half: Jarvis AI Agent -->
+                    <div class="jarvis-section">
+                        <header class="jarvis-header">
+                            <img class="jarvis-icon" src="/static/jarvis-avatar.png" alt="Jarvis">
+                            <span class="jarvis-name">Jarvis</span>
+                            <span class="jarvis-status" id="jarvisStatus">●</span>
+                        </header>
+                        <div class="jarvis-ticker" id="jarvisTicker">
+                            <p class="jarvis-message" id="jarvisMessage">
+                                Hey fam! 👋 Jarvis is warming up...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </article>
+            
+        </section>
+    </main>
+
+    <!-- Quick Add Event Panel -->
+    <div class="quick-add-overlay" id="quickAddOverlay">
+        <div class="quick-add-panel">
+            <div class="quick-add-handle"></div>
+            <header class="quick-add-header">
+                <h2>📅 Quick Add Event</h2>
+                <button class="quick-add-close" id="quickAddClose">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </header>
+            <div class="quick-add-content">
+                <form class="quick-add-form" id="quickAddForm">
+                    <div class="form-group">
+                        <label>Event Title</label>
+                        <input type="text" id="eventTitle" placeholder="What's happening?" required autocomplete="off" inputmode="text" enterkeyhint="next">
+                    </div>
+                    
+                    <div class="quick-add-datetime">
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" id="eventDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Time</label>
+                            <input type="time" id="eventTime">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Quick Set</label>
+                        <div class="quick-time-buttons">
+                            <button type="button" class="quick-time-btn" data-preset="today">Today</button>
+                            <button type="button" class="quick-time-btn" data-preset="tomorrow">Tomorrow</button>
+                            <button type="button" class="quick-time-btn" data-preset="next-week">Next Week</button>
+                            <button type="button" class="quick-time-btn" data-preset="all-day">All Day</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Notes (optional)</label>
+                        <textarea id="eventNotes" placeholder="Add any details..." rows="2" inputmode="text" enterkeyhint="done"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="quick-add-submit">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                            <polyline points="17 21 17 13 7 13 7 21"/>
+                            <polyline points="7 3 7 8 15 8"/>
+                        </svg>
+                        Add Event
+                    </button>
+                    <div class="quick-add-status" id="quickAddStatus"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Floating Action Button - Add Event -->
+    <button class="fab-add-event touch-feedback" id="fabAddEvent" title="Add Event">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+    </button>
+
+    <!-- Spotify Connect mode - no SDK needed, uses backend API -->
+    <script src="/static/app.js"></script>
+</body>
+</html>

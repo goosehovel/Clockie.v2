@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  clockie:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: clockie
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist notes between container restarts
+      - ./notes:/app/notes
+      # Persist config (Spotify tokens, etc.)
+      - ./config.json:/app/config.json
+    env_file:
+      - .env
+    environment:
+      - TZ=America/Phoenix
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/api/time', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+

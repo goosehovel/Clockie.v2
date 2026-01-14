@@ -1,0 +1,2655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Home Hub - Smart Home Control</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --bg-card-hover: rgba(255, 255, 255, 0.06);
+            --text-primary: #e6edf3;
+            --text-secondary: rgba(230, 237, 243, 0.7);
+            --text-muted: rgba(230, 237, 243, 0.4);
+            --accent: #58a6ff;
+            --accent-secondary: #3fb950;
+            --accent-warning: #d29922;
+            --accent-danger: #f85149;
+            --border: rgba(240, 246, 252, 0.1);
+            --border-strong: rgba(240, 246, 252, 0.2);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --radius-lg: 16px;
+            --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            --transition: 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        /* Gradient background */
+        .bg-gradient {
+            position: fixed;
+            inset: 0;
+            background: 
+                radial-gradient(ellipse 80% 50% at 20% 20%, rgba(88, 166, 255, 0.08), transparent),
+                radial-gradient(ellipse 60% 40% at 80% 80%, rgba(63, 185, 80, 0.06), transparent);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Layout */
+        .app-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .sidebar-logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .sidebar-logo-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .sidebar-logo-sub {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 1rem 0;
+            overflow-y: auto;
+        }
+
+        .nav-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .nav-section-title {
+            padding: 0.5rem 1.25rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.25rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all var(--transition);
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: rgba(88, 166, 255, 0.1);
+            color: var(--accent);
+            border-right: 2px solid var(--accent);
+        }
+
+        .nav-item svg {
+            width: 20px;
+            height: 20px;
+            opacity: 0.8;
+        }
+
+        .nav-item.active svg {
+            opacity: 1;
+        }
+
+        .nav-item-badge {
+            margin-left: auto;
+            background: var(--accent);
+            color: var(--bg-primary);
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.15rem 0.5rem;
+            border-radius: 10px;
+        }
+
+        .sidebar-footer {
+            padding: 1rem 1.25rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .back-to-clock {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color var(--transition);
+        }
+
+        .back-to-clock:hover {
+            color: var(--text-primary);
+        }
+
+        .back-to-clock svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            min-height: 100vh;
+        }
+
+        .main-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(13, 17, 23, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .main-header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1rem;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition);
+            border: 1px solid transparent;
+        }
+
+        .btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg-primary);
+            border-color: var(--accent);
+        }
+
+        .btn-primary:hover {
+            background: #79b8ff;
+            border-color: #79b8ff;
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-color: var(--border-strong);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--text-muted);
+        }
+
+        .btn-danger {
+            background: rgba(248, 81, 73, 0.1);
+            color: var(--accent-danger);
+            border-color: rgba(248, 81, 73, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: var(--accent-danger);
+            color: white;
+        }
+
+        .btn-icon {
+            padding: 0.6rem;
+        }
+
+        /* Page content */
+        .page-content {
+            padding: 1.5rem;
+            max-width: 1400px;
+        }
+
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.devices { background: rgba(88, 166, 255, 0.15); }
+        .stat-icon.online { background: rgba(63, 185, 80, 0.15); }
+        .stat-icon.automations { background: rgba(210, 153, 34, 0.15); }
+        .stat-icon.zigbee { background: rgba(163, 113, 247, 0.15); }
+
+        .stat-content h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-content p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        /* Device Cards */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .devices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .device-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .device-card:hover {
+            border-color: var(--border-strong);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .device-card.offline {
+            opacity: 0.6;
+        }
+
+        .device-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+
+        .device-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .device-status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent-secondary);
+        }
+
+        .device-status.offline {
+            background: var(--text-muted);
+        }
+
+        .device-status.warning {
+            background: var(--accent-warning);
+        }
+
+        .device-name {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .device-type {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .device-value {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .device-value-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .device-value-data {
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: var(--bg-secondary);
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-lg);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Status indicator */
+        .zigbee-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+        }
+
+        .zigbee-status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-muted);
+        }
+
+        .zigbee-status-dot.online {
+            background: var(--accent-secondary);
+            box-shadow: 0 0 8px var(--accent-secondary);
+        }
+
+        .zigbee-status-dot.error {
+            background: var(--accent-danger);
+        }
+
+        /* Pairing Mode Banner */
+        .pairing-banner {
+            display: none;
+            background: linear-gradient(135deg, rgba(88, 166, 255, 0.1), rgba(163, 113, 247, 0.1));
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            border-radius: var(--radius);
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            animation: pulse-border 2s ease-in-out infinite;
+        }
+
+        .pairing-banner.active {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        @keyframes pulse-border {
+            0%, 100% { border-color: rgba(88, 166, 255, 0.3); }
+            50% { border-color: rgba(88, 166, 255, 0.6); }
+        }
+
+        .pairing-banner-icon {
+            font-size: 2rem;
+            animation: radar 1.5s ease-in-out infinite;
+        }
+
+        @keyframes radar {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .pairing-banner-text h3 {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .pairing-banner-text p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .pairing-banner-actions {
+            margin-left: auto;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .modal-header {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.25rem;
+            display: flex;
+            transition: color var(--transition);
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-close svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .modal-content {
+            padding: 1.25rem;
+            overflow-y: auto;
+            max-height: 60vh;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.25rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+        }
+
+        /* Form elements */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: border-color var(--transition);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .form-hint {
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Discovered devices list */
+        .discovered-list {
+            margin-top: 1rem;
+        }
+
+        .discovered-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .discovered-item:hover {
+            border-color: var(--accent);
+            background: rgba(88, 166, 255, 0.05);
+        }
+
+        .discovered-item-icon {
+            font-size: 1.5rem;
+        }
+
+        .discovered-item-info {
+            flex: 1;
+        }
+
+        .discovered-item-name {
+            font-weight: 500;
+        }
+
+        .discovered-item-model {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .discovered-item-action {
+            color: var(--accent);
+        }
+
+        /* Logs section */
+        .log-viewer {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.8rem;
+            height: 300px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-time {
+            color: var(--text-muted);
+            margin-right: 0.75rem;
+        }
+
+        .log-level {
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+
+        .log-level.info { background: rgba(88, 166, 255, 0.2); color: var(--accent); }
+        .log-level.warn { background: rgba(210, 153, 34, 0.2); color: var(--accent-warning); }
+        .log-level.error { background: rgba(248, 81, 73, 0.2); color: var(--accent-danger); }
+
+        /* Settings */
+        .settings-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .settings-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+        }
+
+        .settings-card h3 {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* Toggle switch */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .toggle-row:last-child {
+            border-bottom: none;
+        }
+
+        .toggle-label {
+            font-size: 0.9rem;
+        }
+
+        .toggle-label small {
+            display: block;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background var(--transition);
+        }
+
+        .toggle-switch.active {
+            background: var(--accent-secondary);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform var(--transition);
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(20px);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .mobile-menu-btn {
+                display: flex;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1100;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .toast {
+            padding: 1rem 1.25rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .toast.success { border-color: var(--accent-secondary); }
+        .toast.error { border-color: var(--accent-danger); }
+        .toast.warning { border-color: var(--accent-warning); }
+
+        /* Spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(13, 17, 23, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        /* Temperature History Styles */
+        .sensor-checkboxes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+        }
+
+        .sensor-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .sensor-checkbox:hover {
+            background: var(--bg-primary);
+        }
+
+        .sensor-checkbox input {
+            width: 1rem;
+            height: 1rem;
+            accent-color: var(--accent-blue);
+        }
+
+        .sensor-checkbox .color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+            width: 100%;
+        }
+
+        .chart-container canvas {
+            max-height: 100%;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .temp-stat-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .temp-stat-card h4 {
+            margin: 0 0 1rem 0;
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+
+        .temp-stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .temp-stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .temp-stat-label {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .temp-stat-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .temp-stat-value.temp {
+            color: #f97316;
+        }
+
+        .temp-stat-value.humidity {
+            color: #3b82f6;
+        }
+
+        .form-select {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        .toggle-label {
+            cursor: pointer;
+        }
+
+        .toggle-label input[type="checkbox"] {
+            width: 1.25rem;
+            height: 1.25rem;
+            accent-color: var(--accent-green);
+        }
+
+        .section-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient"></div>
+
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="/homehub" class="sidebar-logo">
+                    <div class="sidebar-logo-icon">🏠</div>
+                    <div>
+                        <div class="sidebar-logo-text">Home Hub</div>
+                        <div class="sidebar-logo-sub">Smart Home Control</div>
+                    </div>
+                </a>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Overview</div>
+                    <button class="nav-item active" data-section="dashboard">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7" rx="1"/>
+                            <rect x="14" y="3" width="7" height="7" rx="1"/>
+                            <rect x="3" y="14" width="7" height="7" rx="1"/>
+                            <rect x="14" y="14" width="7" height="7" rx="1"/>
+                        </svg>
+                        Dashboard
+                    </button>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Devices</div>
+                    <button class="nav-item" data-section="devices">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                            <path d="M2 17l10 5 10-5"/>
+                            <path d="M2 12l10 5 10-5"/>
+                        </svg>
+                        All Devices
+                        <span class="nav-item-badge" id="deviceCount">0</span>
+                    </button>
+                    <button class="nav-item" data-section="lights">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 18h6"/>
+                            <path d="M10 22h4"/>
+                            <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0018 8 6 6 0 006 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 018.91 14"/>
+                        </svg>
+                        Lights
+                    </button>
+                    <button class="nav-item" data-section="sensors">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2v4"/>
+                            <path d="M12 18v4"/>
+                            <path d="M4.93 4.93l2.83 2.83"/>
+                            <path d="M16.24 16.24l2.83 2.83"/>
+                            <path d="M2 12h4"/>
+                            <path d="M18 12h4"/>
+                            <path d="M4.93 19.07l2.83-2.83"/>
+                            <path d="M16.24 7.76l2.83-2.83"/>
+                        </svg>
+                        Sensors
+                    </button>
+                    <button class="nav-item" data-section="temp-history">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 3v18h18"/>
+                            <path d="M18 17V9"/>
+                            <path d="M13 17V5"/>
+                            <path d="M8 17v-3"/>
+                        </svg>
+                        Temp History
+                    </button>
+                    <button class="nav-item" data-section="switches">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="1" y="5" width="22" height="14" rx="7"/>
+                            <circle cx="16" cy="12" r="3"/>
+                        </svg>
+                        Switches
+                    </button>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Automation</div>
+                    <button class="nav-item" data-section="automations">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 20V10"/>
+                            <path d="M18 20V4"/>
+                            <path d="M6 20v-4"/>
+                        </svg>
+                        Automations
+                    </button>
+                    <button class="nav-item" data-section="scenes">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="2" width="20" height="20" rx="2"/>
+                            <path d="M7 7h10"/>
+                            <path d="M7 12h10"/>
+                            <path d="M7 17h10"/>
+                        </svg>
+                        Scenes
+                    </button>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">System</div>
+                    <button class="nav-item" data-section="zigbee">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                        </svg>
+                        Zigbee Network
+                    </button>
+                    <button class="nav-item" data-section="logs">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                            <path d="M14 2v6h6"/>
+                            <path d="M16 13H8"/>
+                            <path d="M16 17H8"/>
+                            <path d="M10 9H8"/>
+                        </svg>
+                        Logs
+                    </button>
+                    <button class="nav-item" data-section="settings">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                        </svg>
+                        Settings
+                    </button>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="/achub" class="back-to-clock" style="margin-bottom: 0.75rem;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
+                    </svg>
+                    AC Hub
+                </a>
+                <a href="/" class="back-to-clock">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Back to Clock
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="main-header">
+                <h1 id="pageTitle">Dashboard</h1>
+                <div class="header-actions">
+                    <div class="zigbee-status" id="zigbeeStatus">
+                        <div class="zigbee-status-dot" id="zigbeeStatusDot"></div>
+                        <span id="zigbeeStatusText">Checking...</span>
+                    </div>
+                    <button class="btn btn-primary" id="pairDeviceBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 8v8M8 12h8"/>
+                        </svg>
+                        Add Device
+                    </button>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <!-- Pairing Banner -->
+                <div class="pairing-banner" id="pairingBanner">
+                    <div class="pairing-banner-icon">📡</div>
+                    <div class="pairing-banner-text">
+                        <h3>Pairing Mode Active</h3>
+                        <p>Put your Zigbee device into pairing mode now...</p>
+                    </div>
+                    <div class="pairing-banner-actions">
+                        <button class="btn btn-secondary" id="stopPairingBtn">Stop Pairing</button>
+                    </div>
+                </div>
+
+                <!-- Dashboard Section -->
+                <section class="page-section active" id="section-dashboard">
+                    <div class="dashboard-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon devices">📱</div>
+                            <div class="stat-content">
+                                <h3 id="statDevices">0</h3>
+                                <p>Total Devices</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon online">✅</div>
+                            <div class="stat-content">
+                                <h3 id="statOnline">0</h3>
+                                <p>Online</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon automations">⚡</div>
+                            <div class="stat-content">
+                                <h3 id="statAutomations">0</h3>
+                                <p>Automations</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon zigbee">📶</div>
+                            <div class="stat-content">
+                                <h3 id="statZigbee">--</h3>
+                                <p>Zigbee Coordinator</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-header">
+                        <h2 class="section-title">Recent Devices</h2>
+                    </div>
+
+                    <div id="recentDevices">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🏠</div>
+                            <h3>No devices yet</h3>
+                            <p>Add your first Zigbee device to get started with your smart home.</p>
+                            <button class="btn btn-primary" onclick="openPairingModal()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <path d="M12 8v8M8 12h8"/>
+                                </svg>
+                                Add First Device
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Devices Section -->
+                <section class="page-section" id="section-devices">
+                    <div class="section-header">
+                        <h2 class="section-title">All Devices</h2>
+                        <button class="btn btn-secondary" onclick="refreshDevices()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M23 4v6h-6M1 20v-6h6"/>
+                                <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+                            </svg>
+                            Refresh
+                        </button>
+                    </div>
+                    <div class="devices-grid" id="allDevicesGrid">
+                        <!-- Devices will be populated here -->
+                    </div>
+                </section>
+
+                <!-- Lights Section -->
+                <section class="page-section" id="section-lights">
+                    <div class="section-header">
+                        <h2 class="section-title">Lights</h2>
+                    </div>
+                    <div class="devices-grid" id="lightsGrid">
+                        <!-- Lights will be populated here -->
+                    </div>
+                </section>
+
+                <!-- Sensors Section -->
+                <section class="page-section" id="section-sensors">
+                    <div class="section-header">
+                        <h2 class="section-title">Sensors</h2>
+                    </div>
+                    <div class="devices-grid" id="sensorsGrid">
+                        <!-- Sensors will be populated here -->
+                    </div>
+                </section>
+
+                <!-- Temperature History Section -->
+                <section class="page-section" id="section-temp-history">
+                    <div class="section-header">
+                        <h2 class="section-title">📊 Temperature History</h2>
+                        <div class="section-actions">
+                            <select id="tempHistoryRange" class="form-select">
+                                <option value="1">Last 1 Hour</option>
+                                <option value="6">Last 6 Hours</option>
+                                <option value="12">Last 12 Hours</option>
+                                <option value="24" selected>Last 24 Hours</option>
+                                <option value="48">Last 48 Hours</option>
+                                <option value="168">Last 7 Days</option>
+                            </select>
+                            <button class="btn btn-secondary" onclick="refreshTempHistory()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
+                                    <path d="M23 4v6h-6M1 20v-6h6"/>
+                                    <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+                                </svg>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Temperature Settings Card -->
+                    <div class="settings-card" style="margin-bottom: 1.5rem;">
+                        <div class="settings-card-header">
+                            <h3>⚙️ Logging Settings</h3>
+                        </div>
+                        <div class="settings-card-content" style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
+                            <label class="toggle-label" style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="tempLoggingEnabled" checked>
+                                <span>Enable Logging</span>
+                            </label>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <label for="tempLoggingInterval">Poll Interval:</label>
+                                <select id="tempLoggingInterval" class="form-select" style="width: auto;">
+                                    <option value="1">1 minute</option>
+                                    <option value="2">2 minutes</option>
+                                    <option value="3">3 minutes</option>
+                                    <option value="5">5 minutes</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" onclick="saveTempSettings()">Save Settings</button>
+                            <button class="btn btn-secondary" onclick="logTempNow()">Log Now</button>
+                        </div>
+                    </div>
+
+                    <!-- Sensor Selection -->
+                    <div class="sensor-selector" style="margin-bottom: 1.5rem;">
+                        <label style="font-weight: 500; margin-bottom: 0.5rem; display: block;">Select Sensors to Compare:</label>
+                        <div id="sensorCheckboxes" class="sensor-checkboxes">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Temperature Chart -->
+                    <div class="chart-container" style="background: var(--bg-secondary); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem;">
+                        <canvas id="tempChart"></canvas>
+                    </div>
+
+                    <!-- Humidity Chart -->
+                    <div class="chart-container" style="background: var(--bg-secondary); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem;">
+                        <canvas id="humidityChart"></canvas>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="stats-grid" id="tempStatsGrid">
+                        <!-- Stats cards populated dynamically -->
+                    </div>
+                </section>
+
+                <!-- Switches Section -->
+                <section class="page-section" id="section-switches">
+                    <div class="section-header">
+                        <h2 class="section-title">Switches & Plugs</h2>
+                    </div>
+                    <div class="devices-grid" id="switchesGrid">
+                        <!-- Switches will be populated here -->
+                    </div>
+                </section>
+
+                <!-- Automations Section -->
+                <section class="page-section" id="section-automations">
+                    <div class="section-header">
+                        <h2 class="section-title">Automations</h2>
+                        <button class="btn btn-primary" onclick="openAutomationModal()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 8v8M8 12h8"/>
+                            </svg>
+                            Create Automation
+                        </button>
+                    </div>
+                    <div id="automationsList">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">⚡</div>
+                            <h3>No automations yet</h3>
+                            <p>Create automations to make your devices work together automatically.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Scenes Section -->
+                <section class="page-section" id="section-scenes">
+                    <div class="section-header">
+                        <h2 class="section-title">Scenes</h2>
+                        <button class="btn btn-primary" onclick="openSceneModal()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 8v8M8 12h8"/>
+                            </svg>
+                            Create Scene
+                        </button>
+                    </div>
+                    <div id="scenesList">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🎬</div>
+                            <h3>No scenes yet</h3>
+                            <p>Create scenes to control multiple devices with a single tap.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Zigbee Network Section -->
+                <section class="page-section" id="section-zigbee">
+                    <div class="settings-grid">
+                        <div class="settings-card">
+                            <h3>🔌 Coordinator Status</h3>
+                            <div id="coordinatorInfo">
+                                <p style="color: var(--text-secondary);">Loading coordinator info...</p>
+                            </div>
+                        </div>
+                        <div class="settings-card">
+                            <h3>📊 Network Info</h3>
+                            <div id="networkInfo">
+                                <p style="color: var(--text-secondary);">Loading network info...</p>
+                            </div>
+                        </div>
+                        <div class="settings-card">
+                            <h3>🔧 Network Actions</h3>
+                            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1rem;">
+                                <button class="btn btn-secondary" onclick="permitJoin()">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <path d="M12 8v8M8 12h8"/>
+                                    </svg>
+                                    Enable Pairing
+                                </button>
+                                <button class="btn btn-secondary" onclick="refreshNetworkMap()">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M23 4v6h-6M1 20v-6h6"/>
+                                        <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+                                    </svg>
+                                    Refresh Network
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Logs Section -->
+                <section class="page-section" id="section-logs">
+                    <div class="section-header">
+                        <h2 class="section-title">System Logs</h2>
+                        <button class="btn btn-secondary" onclick="clearLogs()">Clear</button>
+                    </div>
+                    <div class="log-viewer" id="logViewer">
+                        <div class="log-entry">
+                            <span class="log-time">--:--:--</span>
+                            <span class="log-level info">INFO</span>
+                            <span>Waiting for logs...</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Settings Section -->
+                <section class="page-section" id="section-settings">
+                    <div class="settings-grid">
+                        <div class="settings-card">
+                            <h3>⚙️ Zigbee2MQTT Settings</h3>
+                            <div class="form-group">
+                                <label>MQTT Broker Host</label>
+                                <input type="text" id="mqttHost" value="localhost" placeholder="localhost">
+                            </div>
+                            <div class="form-group">
+                                <label>MQTT Broker Port</label>
+                                <input type="number" id="mqttPort" value="1883" placeholder="1883">
+                            </div>
+                            <div class="form-group">
+                                <label>Zigbee2MQTT Base Topic</label>
+                                <input type="text" id="z2mTopic" value="zigbee2mqtt" placeholder="zigbee2mqtt">
+                            </div>
+                            <button class="btn btn-primary" onclick="saveSettings()" style="margin-top: 1rem;">Save Settings</button>
+                        </div>
+
+                        <div class="settings-card">
+                            <h3>🔒 Advanced Options</h3>
+                            <div class="toggle-row">
+                                <div class="toggle-label">
+                                    Auto-permit join on startup
+                                    <small>Allow devices to join for 5 minutes after restart</small>
+                                </div>
+                                <div class="toggle-switch" id="toggleAutoPermit" onclick="toggleSetting('autoPermit')"></div>
+                            </div>
+                            <div class="toggle-row">
+                                <div class="toggle-label">
+                                    Log device events
+                                    <small>Record all device state changes</small>
+                                </div>
+                                <div class="toggle-switch active" id="toggleLogEvents" onclick="toggleSetting('logEvents')"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Device Modal -->
+    <div class="modal-overlay" id="pairingModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Add Zigbee Device</h2>
+                <button class="modal-close" onclick="closePairingModal()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-content">
+                <p style="margin-bottom: 1rem; color: var(--text-secondary);">
+                    Follow these steps to add a new device:
+                </p>
+                <ol style="margin-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-secondary); line-height: 2;">
+                    <li>Click "Start Pairing" below</li>
+                    <li>Put your device into pairing mode (usually hold a button for 5-10 seconds)</li>
+                    <li>Wait for the device to appear</li>
+                </ol>
+
+                <div id="pairingStatus" style="text-align: center; padding: 2rem;">
+                    <div class="empty-state-icon">📡</div>
+                    <p>Ready to pair</p>
+                </div>
+
+                <div class="discovered-list" id="discoveredDevices" style="display: none;">
+                    <!-- Discovered devices will appear here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closePairingModal()">Cancel</button>
+                <button class="btn btn-primary" id="startPairingBtn" onclick="startPairing()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                    </svg>
+                    Start Pairing
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Device Details Modal -->
+    <div class="modal-overlay" id="deviceModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="deviceModalTitle">Device Details</h2>
+                <button class="modal-close" onclick="closeDeviceModal()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-content" id="deviceModalContent">
+                <!-- Device details will be populated here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" onclick="removeDevice()">Remove Device</button>
+                <button class="btn btn-primary" onclick="saveDeviceName()">Save Name</button>
+                <button class="btn btn-secondary" onclick="closeDeviceModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // ============================================================================
+        // State
+        // ============================================================================
+        const state = {
+            devices: [],
+            automations: [],
+            scenes: [],
+            zigbeeStatus: 'unknown',
+            pairingMode: false,
+            selectedDevice: null,
+            logs: [],
+            settings: {
+                mqttHost: 'localhost',
+                mqttPort: 1883,
+                z2mTopic: 'zigbee2mqtt',
+                autoPermit: false,
+                logEvents: true
+            }
+        };
+
+        // ============================================================================
+        // Navigation
+        // ============================================================================
+        document.querySelectorAll('.nav-item[data-section]').forEach(item => {
+            item.addEventListener('click', () => {
+                const section = item.dataset.section;
+                navigateTo(section);
+            });
+        });
+
+        function navigateTo(section) {
+            // Update nav
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.querySelector(`[data-section="${section}"]`)?.classList.add('active');
+
+            // Update sections
+            document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(`section-${section}`)?.classList.add('active');
+
+            // Update title
+            const titles = {
+                dashboard: 'Dashboard',
+                devices: 'All Devices',
+                lights: 'Lights',
+                sensors: 'Sensors',
+                'temp-history': 'Temperature History',
+                switches: 'Switches & Plugs',
+                automations: 'Automations',
+                scenes: 'Scenes',
+                zigbee: 'Zigbee Network',
+                logs: 'System Logs',
+                settings: 'Settings'
+            };
+            document.getElementById('pageTitle').textContent = titles[section] || section;
+            
+            // Load temp history data when navigating to that section
+            if (section === 'temp-history') {
+                updateSensorCheckboxes();
+                refreshTempHistory();
+            }
+        }
+
+        // ============================================================================
+        // API Functions
+        // ============================================================================
+        async function fetchAPI(endpoint, options = {}) {
+            try {
+                const response = await fetch(`/api/homehub${endpoint}`, {
+                    headers: { 'Content-Type': 'application/json' },
+                    ...options
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                showToast('API request failed', 'error');
+                return null;
+            }
+        }
+
+        async function checkZigbeeStatus() {
+            const data = await fetchAPI('/status');
+            if (data) {
+                state.zigbeeStatus = data.status;
+                updateZigbeeStatusUI(data);
+            }
+        }
+
+        function updateZigbeeStatusUI(data) {
+            const dot = document.getElementById('zigbeeStatusDot');
+            const text = document.getElementById('zigbeeStatusText');
+            
+            if (data.status === 'online') {
+                dot.className = 'zigbee-status-dot online';
+                text.textContent = 'Connected';
+                document.getElementById('statZigbee').textContent = 'Online';
+            } else if (data.status === 'offline') {
+                dot.className = 'zigbee-status-dot';
+                text.textContent = 'Offline';
+                document.getElementById('statZigbee').textContent = 'Offline';
+            } else if (data.status === 'not_configured') {
+                dot.className = 'zigbee-status-dot error';
+                text.textContent = 'Not Configured';
+                document.getElementById('statZigbee').textContent = 'Setup Required';
+            } else {
+                dot.className = 'zigbee-status-dot error';
+                text.textContent = data.message || 'Error';
+                document.getElementById('statZigbee').textContent = '--';
+            }
+        }
+
+        async function refreshDevices() {
+            const data = await fetchAPI('/devices');
+            if (data && data.devices) {
+                state.devices = data.devices;
+                renderDevices();
+                updateStats();
+                // Update sensor checkboxes if temp history section exists
+                if (document.getElementById('sensorCheckboxes')) {
+                    updateSensorCheckboxes();
+                }
+            }
+        }
+
+        function updateStats() {
+            const total = state.devices.length;
+            const online = state.devices.filter(d => d.available !== false).length;
+            
+            document.getElementById('statDevices').textContent = total;
+            document.getElementById('statOnline').textContent = online;
+            document.getElementById('statAutomations').textContent = state.automations.length;
+            document.getElementById('deviceCount').textContent = total;
+        }
+
+        // Convert Celsius to Fahrenheit (Freedom Units!)
+        function celsiusToFahrenheit(celsius) {
+            return (celsius * 9/5) + 32;
+        }
+
+        function renderDevices() {
+            const allGrid = document.getElementById('allDevicesGrid');
+            const lightsGrid = document.getElementById('lightsGrid');
+            const sensorsGrid = document.getElementById('sensorsGrid');
+            const switchesGrid = document.getElementById('switchesGrid');
+            const recentDevices = document.getElementById('recentDevices');
+
+            if (state.devices.length === 0) {
+                allGrid.innerHTML = renderEmptyState('devices');
+                lightsGrid.innerHTML = renderEmptyState('lights');
+                sensorsGrid.innerHTML = renderEmptyState('sensors');
+                switchesGrid.innerHTML = renderEmptyState('switches');
+                return;
+            }
+
+            // Categorize devices
+            const lights = state.devices.filter(d => d.type === 'light');
+            const sensors = state.devices.filter(d => d.type === 'sensor');
+            const switches = state.devices.filter(d => d.type === 'switch' || d.type === 'plug');
+
+            allGrid.innerHTML = state.devices.map(renderDeviceCard).join('');
+            lightsGrid.innerHTML = lights.length ? lights.map(renderDeviceCard).join('') : renderEmptyState('lights');
+            sensorsGrid.innerHTML = sensors.length ? sensors.map(renderDeviceCard).join('') : renderEmptyState('sensors');
+            switchesGrid.innerHTML = switches.length ? switches.map(renderDeviceCard).join('') : renderEmptyState('switches');
+
+            // Recent devices (last 6)
+            const recent = [...state.devices].slice(0, 6);
+            if (recent.length > 0) {
+                recentDevices.innerHTML = `<div class="devices-grid">${recent.map(renderDeviceCard).join('')}</div>`;
+            }
+        }
+
+        function renderDeviceCard(device) {
+            const icon = getDeviceIcon(device.type);
+            const statusClass = device.available === false ? 'offline' : '';
+            const statusDotClass = device.available === false ? 'offline' : '';
+            
+            let valueHtml = '';
+            const state = device.state || {};
+            
+            // Contact sensor (door/window)
+            if (device.type === 'contact') {
+                const isOpen = state.contact === false;  // contact=false means OPEN
+                const contactText = isOpen ? 'OPEN' : 'CLOSED';
+                const contactColor = isOpen ? 'var(--accent-yellow)' : 'var(--accent-green)';
+                valueHtml = `
+                    <div class="device-value">
+                        <span class="device-value-label">Contact</span>
+                        <span class="device-value-data" style="color: ${contactColor}">${contactText}</span>
+                    </div>`;
+                // Add temperature if available
+                if (state.temperature !== undefined) {
+                    const tempF = celsiusToFahrenheit(state.temperature).toFixed(1);
+                    valueHtml += `
+                        <div class="device-value">
+                            <span class="device-value-label">Temperature</span>
+                            <span class="device-value-data">${tempF}°F</span>
+                        </div>`;
+                }
+            }
+            // Button device
+            else if (device.type === 'button') {
+                const lastAction = state.action || 'none';
+                valueHtml = `
+                    <div class="device-value">
+                        <span class="device-value-label">Last Action</span>
+                        <span class="device-value-data" style="color: var(--accent-cyan)">${lastAction}</span>
+                    </div>`;
+                if (state.temperature !== undefined) {
+                    const tempF = celsiusToFahrenheit(state.temperature).toFixed(1);
+                    valueHtml += `
+                        <div class="device-value">
+                            <span class="device-value-label">Temperature</span>
+                            <span class="device-value-data">${tempF}°F</span>
+                        </div>`;
+                }
+                if (state.battery !== undefined) {
+                    valueHtml += `
+                        <div class="device-value">
+                            <span class="device-value-label">Battery</span>
+                            <span class="device-value-data">${state.battery}%</span>
+                        </div>`;
+                }
+            }
+            // Motion/occupancy sensor
+            else if (device.type === 'motion') {
+                const occupied = state.occupancy === true;
+                valueHtml = `
+                    <div class="device-value">
+                        <span class="device-value-label">Motion</span>
+                        <span class="device-value-data" style="color: ${occupied ? 'var(--accent-yellow)' : 'var(--text-muted)'}">${occupied ? 'DETECTED' : 'Clear'}</span>
+                    </div>`;
+            }
+            // Vibration sensor
+            else if (device.type === 'vibration') {
+                const moving = state.vibration === true || state.moving === true;
+                valueHtml = `
+                    <div class="device-value">
+                        <span class="device-value-label">Vibration</span>
+                        <span class="device-value-data" style="color: ${moving ? 'var(--accent-yellow)' : 'var(--text-muted)'}">${moving ? 'ACTIVE' : 'Still'}</span>
+                    </div>`;
+            }
+            // Temperature sensor
+            else if (device.type === 'sensor' && state.temperature !== undefined) {
+                const tempF = celsiusToFahrenheit(state.temperature).toFixed(1);
+                valueHtml = `
+                    <div class="device-value">
+                        <span class="device-value-label">Temperature</span>
+                        <span class="device-value-data">${tempF}°F</span>
+                    </div>`;
+            } 
+            // Humidity sensor
+            else if (device.type === 'sensor' && state.humidity !== undefined) {
+                valueHtml = `
+                    <div class="device-value">
+                        <span class="device-value-label">Humidity</span>
+                        <span class="device-value-data">${state.humidity}%</span>
+                    </div>`;
+            } 
+            // Light
+            else if (device.type === 'light' && state.state !== undefined) {
+                valueHtml = `
+                    <div class="device-value">
+                        <span class="device-value-label">State</span>
+                        <span class="device-value-data">${state.state}</span>
+                    </div>`;
+            } 
+            // Generic state
+            else if (state.state !== undefined) {
+                valueHtml = `
+                    <div class="device-value">
+                        <span class="device-value-label">State</span>
+                        <span class="device-value-data">${state.state}</span>
+                    </div>`;
+            }
+
+            return `
+                <div class="device-card ${statusClass}" onclick="openDeviceModal('${device.ieee_address}')">
+                    <div class="device-header">
+                        <div class="device-icon">${icon}</div>
+                        <div class="device-status ${statusDotClass}"></div>
+                    </div>
+                    <div class="device-name">${device.friendly_name || device.ieee_address}</div>
+                    <div class="device-type">${device.model || device.type || 'Unknown'}</div>
+                    ${valueHtml}
+                </div>
+            `;
+        }
+
+        function getDeviceIcon(type) {
+            const icons = {
+                light: '💡',
+                sensor: '🌡️',
+                switch: '🔘',
+                plug: '🔌',
+                lock: '🔒',
+                thermostat: '🌡️',
+                cover: '🪟',
+                fan: '🌀',
+                contact: '🚪',
+                button: '🔘',
+                motion: '👁️',
+                vibration: '📳',
+                default: '📱'
+            };
+            return icons[type] || icons.default;
+        }
+
+        function renderEmptyState(type) {
+            const messages = {
+                devices: { icon: '📱', title: 'No devices', text: 'Add your first device to get started.' },
+                lights: { icon: '💡', title: 'No lights', text: 'Add smart lights to control them here.' },
+                sensors: { icon: '🌡️', title: 'No sensors', text: 'Add sensors to monitor your home.' },
+                switches: { icon: '🔘', title: 'No switches', text: 'Add smart switches or plugs.' }
+            };
+            const msg = messages[type] || messages.devices;
+            return `
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <div class="empty-state-icon">${msg.icon}</div>
+                    <h3>${msg.title}</h3>
+                    <p>${msg.text}</p>
+                </div>
+            `;
+        }
+
+        // ============================================================================
+        // Pairing
+        // ============================================================================
+        document.getElementById('pairDeviceBtn').addEventListener('click', openPairingModal);
+        document.getElementById('stopPairingBtn').addEventListener('click', stopPairing);
+
+        function openPairingModal() {
+            document.getElementById('pairingModal').classList.add('active');
+        }
+
+        function closePairingModal() {
+            document.getElementById('pairingModal').classList.remove('active');
+            stopPairing();
+        }
+
+        async function startPairing() {
+            const btn = document.getElementById('startPairingBtn');
+            btn.innerHTML = '<div class="spinner"></div> Pairing...';
+            btn.disabled = true;
+
+            const result = await fetchAPI('/permit-join', {
+                method: 'POST',
+                body: JSON.stringify({ duration: 120 })
+            });
+
+            if (result && result.success) {
+                state.pairingMode = true;
+                document.getElementById('pairingBanner').classList.add('active');
+                document.getElementById('pairingStatus').innerHTML = `
+                    <div class="spinner" style="margin: 0 auto 1rem;"></div>
+                    <p>Searching for devices...</p>
+                    <p style="color: var(--text-muted); font-size: 0.85rem;">Put your device into pairing mode now</p>
+                `;
+                showToast('Pairing mode enabled for 2 minutes', 'success');
+                
+                // Poll for new devices
+                pollForNewDevices();
+            } else {
+                showToast(result?.message || 'Failed to enable pairing', 'error');
+                btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg> Start Pairing`;
+                btn.disabled = false;
+            }
+        }
+
+        async function stopPairing() {
+            if (!state.pairingMode) return;
+            
+            await fetchAPI('/permit-join', {
+                method: 'POST',
+                body: JSON.stringify({ duration: 0 })
+            });
+            
+            state.pairingMode = false;
+            document.getElementById('pairingBanner').classList.remove('active');
+            
+            const btn = document.getElementById('startPairingBtn');
+            btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg> Start Pairing`;
+            btn.disabled = false;
+            
+            document.getElementById('pairingStatus').innerHTML = `
+                <div class="empty-state-icon">📡</div>
+                <p>Ready to pair</p>
+            `;
+        }
+
+        let pairingPollInterval = null;
+        let notifiedDevices = new Set(); // Track devices we've already notified about
+        
+        function pollForNewDevices() {
+            if (pairingPollInterval) clearInterval(pairingPollInterval);
+            
+            const initialDevices = new Set(state.devices.map(d => d.ieee_address));
+            notifiedDevices = new Set(initialDevices); // Reset notified set to current devices
+            
+            pairingPollInterval = setInterval(async () => {
+                if (!state.pairingMode) {
+                    clearInterval(pairingPollInterval);
+                    return;
+                }
+                
+                await refreshDevices();
+                
+                // Check for new devices that we haven't notified about yet
+                const newDevices = state.devices.filter(d => !initialDevices.has(d.ieee_address));
+                const unnotifiedDevices = newDevices.filter(d => !notifiedDevices.has(d.ieee_address));
+                
+                if (newDevices.length > 0) {
+                    const discoveredList = document.getElementById('discoveredDevices');
+                    discoveredList.style.display = 'block';
+                    discoveredList.innerHTML = newDevices.map(d => `
+                        <div class="discovered-item" onclick="selectDevice('${d.ieee_address}')">
+                            <div class="discovered-item-icon">${getDeviceIcon(d.type)}</div>
+                            <div class="discovered-item-info">
+                                <div class="discovered-item-name">${d.friendly_name || 'New Device'}</div>
+                                <div class="discovered-item-model">${d.model || d.ieee_address}</div>
+                            </div>
+                            <div class="discovered-item-action">✓ Added</div>
+                        </div>
+                    `).join('');
+                    
+                    // Only show toast for devices we haven't notified about yet
+                    if (unnotifiedDevices.length > 0) {
+                        const latestDevice = unnotifiedDevices[unnotifiedDevices.length - 1];
+                        showToast(`Found: ${latestDevice.friendly_name || latestDevice.model || 'New device'}`, 'success');
+                        
+                        // Mark these devices as notified
+                        unnotifiedDevices.forEach(d => notifiedDevices.add(d.ieee_address));
+                    }
+                }
+            }, 3000);
+        }
+
+        // ============================================================================
+        // Device Modal
+        // ============================================================================
+        // Format device state for display with freedom units
+        function formatDeviceState(state) {
+            if (!state) return '';
+            
+            const lines = [];
+            
+            // Temperature
+            if (state.temperature !== undefined) {
+                const tempF = celsiusToFahrenheit(state.temperature).toFixed(1);
+                lines.push(`🌡️ Temperature: ${tempF}°F (${state.temperature}°C)`);
+            }
+            // Humidity
+            if (state.humidity !== undefined) {
+                lines.push(`💧 Humidity: ${state.humidity}%`);
+            }
+            // Pressure
+            if (state.pressure !== undefined) {
+                lines.push(`📊 Pressure: ${state.pressure} hPa`);
+            }
+            // Battery
+            if (state.battery !== undefined) {
+                lines.push(`🔋 Battery: ${state.battery}%`);
+            }
+            // Signal quality
+            if (state.linkquality !== undefined) {
+                lines.push(`📶 Signal: ${state.linkquality}/255`);
+            }
+            
+            // Contact sensor (door/window)
+            if (state.contact !== undefined) {
+                lines.push(`🚪 Contact: ${state.contact ? 'Closed' : 'OPEN'}`);
+            }
+            
+            // Button action
+            if (state.action !== undefined) {
+                lines.push(`🔘 Last Action: ${state.action}`);
+            }
+            
+            // Vibration/Moving (IM6001-MPP multipurpose sensor)
+            if (state.vibration !== undefined) {
+                lines.push(`📳 Vibration: ${state.vibration ? 'Active' : 'None'}`);
+            }
+            if (state.moving !== undefined) {
+                lines.push(`🏃 Moving: ${state.moving ? 'Yes' : 'No'}`);
+            }
+            if (state.tamper !== undefined) {
+                lines.push(`⚠️ Tamper: ${state.tamper ? 'Triggered' : 'OK'}`);
+            }
+            
+            // Accelerometer axis (IM6001-MPP tilt detection)
+            if (state.x_axis !== undefined) {
+                lines.push(`📐 X-Axis: ${state.x_axis}`);
+            }
+            if (state.y_axis !== undefined) {
+                lines.push(`📐 Y-Axis: ${state.y_axis}`);
+            }
+            if (state.z_axis !== undefined) {
+                lines.push(`📐 Z-Axis: ${state.z_axis}`);
+            }
+            
+            // Occupancy/motion
+            if (state.occupancy !== undefined) {
+                lines.push(`👤 Occupancy: ${state.occupancy ? 'Detected' : 'Clear'}`);
+            }
+            
+            // Generic state (lights, switches)
+            if (state.state !== undefined) {
+                lines.push(`⚡ State: ${state.state}`);
+            }
+            if (state.brightness !== undefined) {
+                lines.push(`💡 Brightness: ${Math.round(state.brightness / 255 * 100)}%`);
+            }
+            
+            return lines.join('\n');
+        }
+        
+        function openDeviceModal(ieeeAddress) {
+            const device = state.devices.find(d => d.ieee_address === ieeeAddress);
+            if (!device) return;
+            
+            state.selectedDevice = device;
+            document.getElementById('deviceModalTitle').textContent = device.friendly_name || device.ieee_address;
+            
+            const formattedState = formatDeviceState(device.state);
+            
+            const content = document.getElementById('deviceModalContent');
+            content.innerHTML = `
+                <div class="form-group">
+                    <label>Friendly Name</label>
+                    <input type="text" id="deviceName" value="${device.friendly_name || ''}" placeholder="Enter a friendly name">
+                    <small class="form-hint">Give your device a memorable name</small>
+                </div>
+                <div class="form-group">
+                    <label>IEEE Address</label>
+                    <input type="text" value="${device.ieee_address}" disabled>
+                </div>
+                <div class="form-group">
+                    <label>Model</label>
+                    <input type="text" value="${device.model || 'Unknown'}" disabled>
+                </div>
+                <div class="form-group">
+                    <label>Manufacturer</label>
+                    <input type="text" value="${device.manufacturer || 'Unknown'}" disabled>
+                </div>
+                ${formattedState ? `
+                <div class="form-group">
+                    <label>Current Readings</label>
+                    <pre style="background: var(--bg-tertiary); padding: 0.75rem; border-radius: var(--radius-sm); font-size: 0.9rem; overflow: auto; line-height: 1.8; white-space: pre-wrap;">${formattedState}</pre>
+                </div>
+                ` : ''}
+            `;
+            
+            document.getElementById('deviceModal').classList.add('active');
+        }
+        
+        async function saveDeviceName() {
+            if (!state.selectedDevice) return;
+            
+            const newName = document.getElementById('deviceName').value.trim();
+            if (!newName) {
+                showToast('Please enter a name', 'error');
+                return;
+            }
+            
+            if (newName === state.selectedDevice.friendly_name) {
+                showToast('Name unchanged', 'warning');
+                return;
+            }
+            
+            const result = await fetchAPI(`/devices/${state.selectedDevice.ieee_address}/rename`, {
+                method: 'POST',
+                body: JSON.stringify({ name: newName })
+            });
+            
+            if (result && result.success) {
+                showToast(`Renamed to "${newName}"`, 'success');
+                await refreshDevices();
+                closeDeviceModal();
+            } else {
+                showToast(result?.message || 'Failed to rename device', 'error');
+            }
+        }
+
+        function closeDeviceModal() {
+            document.getElementById('deviceModal').classList.remove('active');
+            state.selectedDevice = null;
+        }
+
+        async function removeDevice() {
+            if (!state.selectedDevice) return;
+            
+            if (!confirm(`Remove ${state.selectedDevice.friendly_name || state.selectedDevice.ieee_address}?`)) return;
+            
+            const result = await fetchAPI(`/devices/${state.selectedDevice.ieee_address}`, {
+                method: 'DELETE'
+            });
+            
+            if (result && result.success) {
+                showToast('Device removed', 'success');
+                closeDeviceModal();
+                refreshDevices();
+            } else {
+                showToast(result?.message || 'Failed to remove device', 'error');
+            }
+        }
+
+        // ============================================================================
+        // Settings
+        // ============================================================================
+        function toggleSetting(setting) {
+            const toggle = document.getElementById(`toggle${setting.charAt(0).toUpperCase() + setting.slice(1)}`);
+            state.settings[setting] = !state.settings[setting];
+            toggle.classList.toggle('active', state.settings[setting]);
+        }
+
+        async function saveSettings() {
+            state.settings.mqttHost = document.getElementById('mqttHost').value;
+            state.settings.mqttPort = parseInt(document.getElementById('mqttPort').value);
+            state.settings.z2mTopic = document.getElementById('z2mTopic').value;
+            
+            const result = await fetchAPI('/settings', {
+                method: 'POST',
+                body: JSON.stringify(state.settings)
+            });
+            
+            if (result && result.success) {
+                showToast('Settings saved', 'success');
+            } else {
+                showToast('Failed to save settings', 'error');
+            }
+        }
+
+        // ============================================================================
+        // Toast
+        // ============================================================================
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = { success: '✓', error: '✕', warning: '⚠', info: 'ℹ' };
+            toast.innerHTML = `${icons[type] || icons.info} ${message}`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // ============================================================================
+        // Logs
+        // ============================================================================
+        function addLog(level, message) {
+            const time = new Date().toLocaleTimeString();
+            state.logs.unshift({ time, level, message });
+            if (state.logs.length > 100) state.logs.pop();
+            renderLogs();
+        }
+
+        function renderLogs() {
+            const viewer = document.getElementById('logViewer');
+            viewer.innerHTML = state.logs.map(log => `
+                <div class="log-entry">
+                    <span class="log-time">${log.time}</span>
+                    <span class="log-level ${log.level}">${log.level.toUpperCase()}</span>
+                    <span>${log.message}</span>
+                </div>
+            `).join('');
+        }
+
+        function clearLogs() {
+            state.logs = [];
+            renderLogs();
+        }
+
+        // ============================================================================
+        // Temperature History
+        // ============================================================================
+        let tempChart = null;
+        let humidityChart = null;
+        const chartColors = [
+            '#f97316', // Orange
+            '#3b82f6', // Blue
+            '#22c55e', // Green
+            '#a855f7', // Purple
+            '#ef4444', // Red
+            '#eab308', // Yellow
+            '#06b6d4', // Cyan
+            '#ec4899', // Pink
+        ];
+        let selectedSensors = new Set();
+        let tempHistoryData = {};
+
+        function initTempHistorySection() {
+            // Load temp logging settings
+            loadTempSettings();
+            
+            // Initialize sensor checkboxes when devices are loaded
+            updateSensorCheckboxes();
+            
+            // Set up event listeners
+            document.getElementById('tempHistoryRange')?.addEventListener('change', refreshTempHistory);
+        }
+
+        async function loadTempSettings() {
+            try {
+                const result = await fetchAPI('/temp-settings');
+                if (result) {
+                    document.getElementById('tempLoggingEnabled').checked = result.enabled;
+                    document.getElementById('tempLoggingInterval').value = result.interval;
+                }
+            } catch (e) {
+                console.error('Failed to load temp settings:', e);
+            }
+        }
+
+        async function saveTempSettings() {
+            const enabled = document.getElementById('tempLoggingEnabled').checked;
+            const interval = parseInt(document.getElementById('tempLoggingInterval').value);
+            
+            const result = await fetchAPI('/temp-settings', {
+                method: 'POST',
+                body: JSON.stringify({ enabled, interval })
+            });
+            
+            if (result && result.success) {
+                showToast('Temperature logging settings saved', 'success');
+            } else {
+                showToast('Failed to save settings', 'error');
+            }
+        }
+
+        async function logTempNow() {
+            const result = await fetchAPI('/temp-log-now', { method: 'POST' });
+            if (result && result.success) {
+                showToast('Temperature readings logged', 'success');
+                refreshTempHistory();
+            } else {
+                showToast('Failed to log temperatures', 'error');
+            }
+        }
+
+        function updateSensorCheckboxes() {
+            const container = document.getElementById('sensorCheckboxes');
+            if (!container) return;
+            
+            const sensors = state.devices.filter(d => d.type === 'sensor' && d.state?.temperature !== undefined);
+            
+            if (sensors.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-muted);">No temperature sensors found. Add sensors to start logging.</div>';
+                return;
+            }
+            
+            container.innerHTML = sensors.map((sensor, index) => {
+                const color = chartColors[index % chartColors.length];
+                const checked = selectedSensors.size === 0 || selectedSensors.has(sensor.ieee_address);
+                if (selectedSensors.size === 0) selectedSensors.add(sensor.ieee_address);
+                
+                return `
+                    <label class="sensor-checkbox">
+                        <input type="checkbox" 
+                            value="${sensor.ieee_address}" 
+                            ${checked ? 'checked' : ''}
+                            onchange="toggleSensor('${sensor.ieee_address}')">
+                        <span class="color-dot" style="background: ${color}"></span>
+                        <span>${sensor.friendly_name || sensor.ieee_address}</span>
+                    </label>
+                `;
+            }).join('');
+        }
+
+        function toggleSensor(deviceId) {
+            if (selectedSensors.has(deviceId)) {
+                selectedSensors.delete(deviceId);
+            } else {
+                selectedSensors.add(deviceId);
+            }
+            refreshTempHistory();
+        }
+
+        async function refreshTempHistory() {
+            const hours = parseInt(document.getElementById('tempHistoryRange')?.value || 24);
+            
+            try {
+                const result = await fetchAPI(`/temp-history?hours=${hours}`);
+                if (result && result.history) {
+                    tempHistoryData = result.history;
+                    renderTempCharts();
+                    renderTempStats(hours);
+                }
+            } catch (e) {
+                console.error('Failed to fetch temp history:', e);
+            }
+        }
+
+        function renderTempCharts() {
+            const tempCtx = document.getElementById('tempChart');
+            const humidityCtx = document.getElementById('humidityChart');
+            
+            if (!tempCtx || !humidityCtx) return;
+            
+            // Group data by device
+            const deviceData = {};
+            for (const reading of tempHistoryData) {
+                if (!selectedSensors.has(reading.device_id)) continue;
+                
+                if (!deviceData[reading.device_id]) {
+                    deviceData[reading.device_id] = {
+                        name: reading.friendly_name || reading.device_id,
+                        temps: [],
+                        humidity: []
+                    };
+                }
+                
+                const timestamp = new Date(reading.timestamp + 'Z'); // Parse as UTC
+                deviceData[reading.device_id].temps.push({
+                    x: timestamp,
+                    y: celsiusToFahrenheit(reading.temperature)
+                });
+                if (reading.humidity !== null) {
+                    deviceData[reading.device_id].humidity.push({
+                        x: timestamp,
+                        y: reading.humidity
+                    });
+                }
+            }
+            
+            // Create datasets
+            const tempDatasets = [];
+            const humidityDatasets = [];
+            let colorIndex = 0;
+            
+            // Match colors to checkboxes
+            const sensors = state.devices.filter(d => d.type === 'sensor');
+            const colorMap = {};
+            sensors.forEach((s, i) => {
+                colorMap[s.ieee_address] = chartColors[i % chartColors.length];
+            });
+            
+            for (const [deviceId, data] of Object.entries(deviceData)) {
+                const color = colorMap[deviceId] || chartColors[colorIndex % chartColors.length];
+                
+                tempDatasets.push({
+                    label: data.name,
+                    data: data.temps,
+                    borderColor: color,
+                    backgroundColor: color + '20',
+                    tension: 0.3,
+                    pointRadius: 2,
+                    pointHoverRadius: 5
+                });
+                
+                if (data.humidity.length > 0) {
+                    humidityDatasets.push({
+                        label: data.name,
+                        data: data.humidity,
+                        borderColor: color,
+                        backgroundColor: color + '20',
+                        tension: 0.3,
+                        pointRadius: 2,
+                        pointHoverRadius: 5
+                    });
+                }
+                
+                colorIndex++;
+            }
+            
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: '#e6edf3',
+                            usePointStyle: true
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(22, 27, 34, 0.95)',
+                        titleColor: '#e6edf3',
+                        bodyColor: '#e6edf3',
+                        borderColor: 'rgba(48, 54, 61, 1)',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            displayFormats: {
+                                hour: 'MMM d, HH:mm',
+                                day: 'MMM d'
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(48, 54, 61, 0.5)'
+                        },
+                        ticks: {
+                            color: '#8b949e'
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: 'rgba(48, 54, 61, 0.5)'
+                        },
+                        ticks: {
+                            color: '#8b949e'
+                        }
+                    }
+                }
+            };
+            
+            // Destroy existing charts
+            if (tempChart) tempChart.destroy();
+            if (humidityChart) humidityChart.destroy();
+            
+            // Create temperature chart
+            tempChart = new Chart(tempCtx, {
+                type: 'line',
+                data: { datasets: tempDatasets },
+                options: {
+                    ...chartOptions,
+                    plugins: {
+                        ...chartOptions.plugins,
+                        title: {
+                            display: true,
+                            text: 'Temperature (°F)',
+                            color: '#e6edf3',
+                            font: { size: 16 }
+                        }
+                    }
+                }
+            });
+            
+            // Create humidity chart
+            humidityChart = new Chart(humidityCtx, {
+                type: 'line',
+                data: { datasets: humidityDatasets },
+                options: {
+                    ...chartOptions,
+                    plugins: {
+                        ...chartOptions.plugins,
+                        title: {
+                            display: true,
+                            text: 'Humidity (%)',
+                            color: '#e6edf3',
+                            font: { size: 16 }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function renderTempStats(hours) {
+            const container = document.getElementById('tempStatsGrid');
+            if (!container) return;
+            
+            const sensors = state.devices.filter(d => 
+                d.type === 'sensor' && selectedSensors.has(d.ieee_address)
+            );
+            
+            const statsPromises = sensors.map(async (sensor, index) => {
+                const result = await fetchAPI(`/temp-stats/${sensor.ieee_address}?hours=${hours}`);
+                const stats = result?.stats || {};
+                const color = chartColors[index % chartColors.length];
+                
+                const minF = stats.min_temp !== null ? celsiusToFahrenheit(stats.min_temp).toFixed(1) : '--';
+                const maxF = stats.max_temp !== null ? celsiusToFahrenheit(stats.max_temp).toFixed(1) : '--';
+                const avgF = stats.avg_temp !== null ? celsiusToFahrenheit(stats.avg_temp).toFixed(1) : '--';
+                
+                return `
+                    <div class="temp-stat-card" style="border-left-color: ${color}">
+                        <h4>${sensor.friendly_name || sensor.ieee_address}</h4>
+                        <div class="temp-stat-row">
+                            <span class="temp-stat-label">Min Temp</span>
+                            <span class="temp-stat-value temp">${minF}°F</span>
+                        </div>
+                        <div class="temp-stat-row">
+                            <span class="temp-stat-label">Max Temp</span>
+                            <span class="temp-stat-value temp">${maxF}°F</span>
+                        </div>
+                        <div class="temp-stat-row">
+                            <span class="temp-stat-label">Avg Temp</span>
+                            <span class="temp-stat-value temp">${avgF}°F</span>
+                        </div>
+                        <div class="temp-stat-row">
+                            <span class="temp-stat-label">Min Humidity</span>
+                            <span class="temp-stat-value humidity">${stats.min_humidity?.toFixed(1) || '--'}%</span>
+                        </div>
+                        <div class="temp-stat-row">
+                            <span class="temp-stat-label">Max Humidity</span>
+                            <span class="temp-stat-value humidity">${stats.max_humidity?.toFixed(1) || '--'}%</span>
+                        </div>
+                        <div class="temp-stat-row">
+                            <span class="temp-stat-label">Readings</span>
+                            <span class="temp-stat-value">${stats.readings || 0}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            const statsHtml = await Promise.all(statsPromises);
+            container.innerHTML = statsHtml.join('');
+        }
+
+        // ============================================================================
+        // Initialize
+        // ============================================================================
+        async function init() {
+            addLog('info', 'Home Hub initializing...');
+            await checkZigbeeStatus();
+            await refreshDevices();
+            initTempHistorySection();
+            addLog('info', 'Home Hub ready');
+            
+            // Poll status every 30 seconds
+            setInterval(checkZigbeeStatus, 30000);
+            
+            // Auto-refresh device states every 3 seconds for live updates
+            setInterval(refreshDevicesQuiet, 3000);
+        }
+        
+        // Quiet refresh - doesn't show loading states, just updates data
+        async function refreshDevicesQuiet() {
+            try {
+                const data = await fetchAPI('/devices');
+                if (data && data.devices) {
+                    // Check if any state actually changed
+                    const changed = hasDeviceStateChanged(state.devices, data.devices);
+                    state.devices = data.devices;
+                    if (changed) {
+                        renderDevices();
+                        updateStats();
+                    }
+                }
+            } catch (e) {
+                // Silent fail for background refresh
+            }
+        }
+        
+        // Compare device states to detect changes
+        function hasDeviceStateChanged(oldDevices, newDevices) {
+            if (oldDevices.length !== newDevices.length) return true;
+            
+            for (const newDev of newDevices) {
+                const oldDev = oldDevices.find(d => d.ieee_address === newDev.ieee_address);
+                if (!oldDev) return true;
+                
+                // Compare state objects
+                const oldState = JSON.stringify(oldDev.state || {});
+                const newState = JSON.stringify(newDev.state || {});
+                if (oldState !== newState) return true;
+            }
+            return false;
+        }
+
+        init();
+    </script>
+</body>
+</html>

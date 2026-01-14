@@ -1,0 +1,15 @@
+{
+  "settings": {
+    "mqtt_host": "localhost",
+    "mqtt_port": 1883,
+    "mqtt_username": "",
+    "mqtt_password": "",
+    "z2m_topic": "zigbee2mqtt",
+    "auto_permit": false,
+    "log_events": true,
+    "temp_logging_enabled": true,
+    "temp_logging_interval": 1
+  },
+  "automations": [],
+  "scenes": []
+}
