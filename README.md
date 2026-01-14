@@ -41,7 +41,7 @@ A beautiful, modern wall clock dashboard with smart home integration. Designed f
 
 ```bash
 # Clone the repository
-git clone https://github.com/goosehovel/Clockie.git
+git clone https://github.com/goosehovel/Clockie.v2.git
 cd clockie/clockie_docker
 
 # Run the installer
@@ -59,7 +59,7 @@ The installer will:
 
 ```bash
 # Clone and configure
-git clone https://github.com/goosehovel/Clockie.git
+git clone https://github.com/goosehovel/Clockie.v2.git
 cd clockie/clockie_docker
 
 # Copy and edit config
